@@ -1,13 +1,17 @@
 import re
 from urllib.parse import urlparse
 
+urls =  ["[\w-]*.ics.uci.edu/\w*",
+        "\w*.cs.uci.edu/\w*",
+        "\w*.informatics.uci.edu/\w*",
+        "\w*.stat.uci.edu/\w*"]
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
 def extractLink(html : str):
     # '<a href="https://example.com">Example</a> <a href="https://test.com">Test</a>'
-    pattern = r'href="(.*?)"'
+    pattern = r'href="(.*?)"' #lazy method only goes up to the end of the link
     return re.findall(pattern, html)
 
 def extract_next_links(url, resp):
@@ -28,13 +32,22 @@ def extract_next_links(url, resp):
     html = resp.raw_response.content.decode("utf-8")
     return extractLink(html)
 
+def check(link):
+    for i in urls:
+        if len(re.findall(i, link)) > 0:
+            return True
+    return False
+
 def is_valid(url):
-    # Decide whether to crawl this url or not. 
+    # Decide whether to crawl this url or not.
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
     try:
         parsed = urlparse(url)
+
         if parsed.scheme not in set(["http", "https"]):
+            return False
+        elif not check(url):
             return False
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
@@ -44,7 +57,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()) #checks the end of the url
 
     except TypeError:
         print ("TypeError for ", parsed)
