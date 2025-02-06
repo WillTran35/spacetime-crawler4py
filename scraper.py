@@ -1,6 +1,24 @@
 import re
 from urllib.parse import urlparse
 
+# Make sure to defragment the URLs, i.e. remove the fragment part.
+# look into lxml and beautifulsoup
+
+# Crawl all pages with high textual information content
+# Detect and avoid infinite traps
+# Detect and avoid sets of similar pages with no information
+# Detect redirects and if the page redirects your crawler, index the redirected content
+# Detect and avoid dead URLs that return a 200 status but no data
+# Detect and avoid crawling very large files, especially if they have low information value
+
+# Please remember to transform relative to absolute URLs
+
+# Before launching your crawler, ensure that you send the server a request with an ASCII URL, but neither the
+# entire HTML content of the webpage that you are crawling nor garbage/Unicode strings.
+
+# You should write simple automatic trap detection systems based on repeated URL patterns and/or (ideally)
+# webpage content similarity repetition over a certain amount of chained pages (the threshold definition is up to you!)
+
 urls =  ["[\w-]*.ics.uci.edu/\w*",
         "\w*.cs.uci.edu/\w*",
         "\w*.informatics.uci.edu/\w*",
@@ -45,10 +63,13 @@ def is_valid(url):
     try:
         parsed = urlparse(url)
 
-        if parsed.scheme not in set(["http", "https"]):
+        if parsed.scheme not in set(["http", "https"]): #checks the protocol; absolute urls must have http/https
             return False
-        elif not check(url):
+        elif not check(url): #checks the domain
             return False
+
+        # needs to check if it works outside of site
+
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
