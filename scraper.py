@@ -1,5 +1,6 @@
 import re
 from urllib.parse import urlparse
+from lxml import html
 
 # Make sure to defragment the URLs, i.e. remove the fragment part.
 # look into lxml and beautifulsoup
@@ -27,10 +28,12 @@ def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
-def extractLink(html : str):
+def extractLink(page : str):
     # '<a href="https://example.com">Example</a> <a href="https://test.com">Test</a>'
-    pattern = r'href="(.*?)"' #lazy method only goes up to the end of the link
-    return re.findall(pattern, html)
+    # pattern = r'href="(.*?)"' #lazy method only goes up to the end of the link
+
+    tree = html.fromstring(page)
+    return tree.xpath("//a/@href")
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -47,6 +50,8 @@ def extract_next_links(url, resp):
     # go thru resp.raw_response and look for <a> anchor tags
     # convert to a string using resp.raw_response.content.decode("utf-8");
 
+    if resp.status != 200:
+        return []
     html = resp.raw_response.content.decode("utf-8")
     return extractLink(html)
 
