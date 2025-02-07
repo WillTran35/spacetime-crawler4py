@@ -2,11 +2,11 @@ import re
 from urllib.parse import urlparse
 from lxml import html
 
-# Make sure to defragment the URLs, i.e. remove the fragment part.
+# Make sure to defragment the URLs, i.e. remove the fragment part. DONE
 # look into lxml and beautifulsoup
 
 # Crawl all pages with high textual information content
-# Detect and avoid infinite traps
+# Detect and avoid infinite traps -> we can make a set of urls instead of a list
 # Detect and avoid sets of similar pages with no information
 # Detect redirects and if the page redirects your crawler, index the redirected content
 # Detect and avoid dead URLs that return a 200 status but no data
@@ -15,12 +15,12 @@ from lxml import html
 # Please remember to transform relative to absolute URLs
 
 # Before launching your crawler, ensure that you send the server a request with an ASCII URL, but neither the
-# entire HTML content of the webpage that you are crawling nor garbage/Unicode strings.
+# entire HTML content of the webpage that you are crawling nor garbage/Unicode strings. DONE?
 
 # You should write simple automatic trap detection systems based on repeated URL patterns and/or (ideally)
 # webpage content similarity repetition over a certain amount of chained pages (the threshold definition is up to you!)
 
-urls =  ["[\w-]*.ics.uci.edu/\w*",
+urls =  ["\w*.ics.uci.edu/\w*",
         "\w*.cs.uci.edu/\w*",
         "\w*.informatics.uci.edu/\w*",
         "\w*.stat.uci.edu/\w*"]
@@ -33,7 +33,7 @@ def extractLink(page : str):
     # pattern = r'href="(.*?)"' #lazy method only goes up to the end of the link
 
     tree = html.fromstring(page)
-    return tree.xpath("//a/@href")
+    return tree.xpath("//a/@href") #extracts only href links
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -50,12 +50,14 @@ def extract_next_links(url, resp):
     # go thru resp.raw_response and look for <a> anchor tags
     # convert to a string using resp.raw_response.content.decode("utf-8");
 
+    # 204 is nothing on page
     if resp.status != 200:
         return []
     html = resp.raw_response.content.decode("utf-8")
     return extractLink(html)
 
 def check(link):
+    """Checks if the link matches any of the required links to crawl. Returns true if matches, returns false otherwise."""
     for i in urls:
         if len(re.findall(i, link)) > 0:
             return True
@@ -67,10 +69,10 @@ def is_valid(url):
     # There are already some conditions that return False.
     try:
         parsed = urlparse(url)
-
+        trimmed = trimFragment(url)
         if parsed.scheme not in set(["http", "https"]): #checks the protocol; absolute urls must have http/https
             return False
-        elif not check(url): #checks the domain
+        elif not check(trimmed): #checks the domain
             return False
 
         # needs to check if it works outside of site
@@ -84,7 +86,16 @@ def is_valid(url):
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower()) #checks the end of the url
-
+        # ex. "https://user:pass@example.com:8080/path/to/page?query=value#fragment"
+        # ParseResult(scheme='https', netloc='user:pass@example.com:8080', path='/path/to/page',
+        #             params='', query='query=value', fragment='fragment')
+        # parsed.path only returns /path/to/page this part
     except TypeError:
         print ("TypeError for ", parsed)
         raise
+
+def trimFragment(url : str ):
+    """Trims the fragment of a url.
+    For example, https://example.com/page.html#section2 will return https://example.com/page.html"""
+    return url.split("#", 1)[0]
+
