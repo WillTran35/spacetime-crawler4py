@@ -1,5 +1,5 @@
 import re
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 from lxml import html
 from bs4 import BeautifulSoup
 import requests
@@ -8,34 +8,39 @@ import requests
 # look into lxml and beautifulsoup
 
 # Crawl all pages with high textual information content DONE
-# Detect and avoid infinite traps -> we can make a set of urls instead of a list
+# Detect and avoid infinite traps -> we can make a set of urls instead of a list DONE
 # Detect and avoid sets of similar pages with no information
-# Detect redirects and if the page redirects your crawler, index the redirected content
+# Detect redirects and if the page redirects your crawler, index the redirected content DONE
 # Detect and avoid dead URLs that return a 200 status but no data
-# Detect and avoid crawling very large files, especially if they have low information value
+# Detect and avoid crawling very large files, especially if they have  low information value DONE (checked ratio)
 
-# Please remember to transform relative to absolute URLs
+# Please remember to transform relative to absolute URLs DONE
 
 # Before launching your crawler, ensure that you send the server a request with an ASCII URL, but neither the
 # entire HTML content of the webpage that you are crawling nor garbage/Unicode strings. DONE?
 
-# You should write simple automatic trap detection systems based on repeated URL patterns and/or (ideally)
+# You should write simple automatic trap detection systems based on repeated URL patterns and/or (ideally) DONE
 # webpage content similarity repetition over a certain amount of chained pages (the threshold definition is up to you!)
 
 urls =  ["\w*.ics.uci.edu/\w*",
         "\w*.cs.uci.edu/\w*",
         "\w*.informatics.uci.edu/\w*",
         "\w*.stat.uci.edu/\w*"]
+
+# visited_urls = {}
 def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
-def extractLink(page : str):
+def extractLink(page : str, url : str) -> set:
+    """Helper function to help extract all links from a given url."""
     # '<a href="https://example.com">Example</a> <a href="https://test.com">Test</a>'
-    # pattern = r'href="(.*?)"' #lazy method only goes up to the end of the link
-
     tree = html.fromstring(page)
-    return tree.xpath("//a/@href") #extracts only href links
+    links: list[str] = tree.xpath("//a/@href")
+    # we should make sure all the links are trimmed here and transform all relative to absolute urls
+    links = [trimFragment(link) for link in links]  # trims the fragment part out of all urls
+    links = [urljoin(url, link) if is_relative(link) else link for link in links]
+    return set(links)  # no duplicate links to avoid traps
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -56,9 +61,9 @@ def extract_next_links(url, resp):
     if resp.status != 200:
         return []
     html = resp.raw_response.content.decode("utf-8")
-    return extractLink(html)
+    return extractLink(html, url)
 
-def check(link):
+def validLink(link):
     """Checks if the link matches any of the required links to crawl. Returns true if matches, returns false otherwise."""
     for i in urls:
         if len(re.findall(i, link)) > 0:
@@ -70,13 +75,12 @@ def is_valid(url):
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
     try:
-        parsed = urlparse(url)
-        trimmed = trimFragment(url)
-        if parsed.scheme not in set(["http", "https"]): #checks the protocol; absolute urls must have http/https
+        parsed = urlparse(url)  # returns a ParsedObject
+        if parsed.scheme not in {"http", "https"}:  # checks the protocol; absolute urls must have http/https
             return False
-        elif not check(trimmed): #checks the domain
+        elif not validLink(url):  # checks the domain
             return False
-        elif getTokens(url) < 50 or checkRatio(url) < 0.1: # Crawls all pages with high textual information content
+        elif getNumTokens(url) < 50 or checkRatio(url) < 0.1:  # Crawls all pages with high textual information content
             return False
         # needs to check if it works outside of site
 
@@ -102,7 +106,7 @@ def trimFragment(url : str ):
     For example, https://example.com/page.html#section2 will return https://example.com/page.html"""
     return url.split("#", 1)[0]
 
-def getTokens(url: str) -> set:
+def getNumTokens(url: str) -> int:
     # Crawl all pages with high textual information content
     # crawl if text to html ratio is at least 0.1 and over 50 tokens
 
@@ -116,7 +120,7 @@ def getTokens(url: str) -> set:
 
     result = set(tokenizeline(text))
 
-    return result
+    return len(result)
 
 def tokenizeline(line:str) -> list:
     """Helper function to tokenize an individual line."""
@@ -148,3 +152,10 @@ def checkRatio(url: str) -> float:
     html_length = len(html_content)
 
     return text_len / html_length if html_length > 0 else 0
+
+# Detect and avoid sets of similar pages with no information
+
+def is_relative(url: str):
+    """Checks if the url is a relative url. A relative url is a direction to a page without a scheme nor domain."""
+    parsed = urlparse(url)
+    return parsed.scheme not in {'https', 'http'} or parsed.netloc == ""
