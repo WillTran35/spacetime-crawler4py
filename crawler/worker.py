@@ -6,7 +6,6 @@ from utils import get_logger
 import scraper
 import time
 
-
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
         self.logger = get_logger(f"Worker-{worker_id}", "Worker")
@@ -29,6 +28,7 @@ class Worker(Thread):
                 f"using cache {self.config.cache_server}.")
             scraped_urls = scraper.scraper(tbd_url, resp)
             for scraped_url in scraped_urls:
-                self.frontier.add_url(scraped_url)
+                if not (self.frontier.checkRatio() < 0.1 or self.frontier.getNumTokens() < 50):
+                    self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)

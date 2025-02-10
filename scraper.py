@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlparse, urljoin
 from lxml import html
 from bs4 import BeautifulSoup
-import requests
+# import requests
 
 # Make sure to defragment the URLs, i.e. remove the fragment part. DONE
 # look into lxml and beautifulsoup
@@ -80,8 +80,8 @@ def is_valid(url):
             return False
         elif not validLink(url):  # checks the domain
             return False
-        elif getNumTokens(url) < 50 or checkRatio(url) < 0.1:  # Crawls all pages with high textual information content
-            return False
+        # elif getNumTokens(url) < 50 or checkRatio(url) < 0.1:  # Crawls all pages with high textual information content
+        #     return False
         # needs to check if it works outside of site
 
         return not re.match(
@@ -106,52 +106,9 @@ def trimFragment(url : str ):
     For example, https://example.com/page.html#section2 will return https://example.com/page.html"""
     return url.split("#", 1)[0]
 
-def getNumTokens(url: str) -> int:
-    # Crawl all pages with high textual information content
-    # crawl if text to html ratio is at least 0.1 and over 50 tokens
 
-    # check text to html ratio
 
-    response = requests.get(url)
-    html_content = response.text
 
-    soup = BeautifulSoup(html_content, "html.parser")
-    text = soup.get_text(separator=" ").strip()
-
-    result = set(tokenizeline(text))
-
-    return len(result)
-
-def tokenizeline(line:str) -> list:
-    """Helper function to tokenize an individual line."""
-    # This function runs in O(n) time complexity, where n is the length of the line.
-    # It must iterate through the entire string getting each letter.
-    result = []
-    string = ""
-    line = line.lower()
-    pattern = "[a-zA-Z0-9]"
-    for i in line:
-        if re.search(pattern, i):
-            string += i
-        else:
-            if string != "":
-                result.append(string)
-            string = ""
-    if string != "":
-        result.append(string)
-    return result
-
-def checkRatio(url: str) -> float:
-    """Checks the text to html ratio. Only crawl pages with high textual information (ratio > 0.1)."""
-    response = requests.get(url)
-    html_content = response.text
-
-    soup = BeautifulSoup(html_content, "html.parser")
-    text = soup.get_text(separator=" ").strip()
-    text_len = len(text)
-    html_length = len(html_content)
-
-    return text_len / html_length if html_length > 0 else 0
 
 # Detect and avoid sets of similar pages with no information
 
