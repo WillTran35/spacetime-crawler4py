@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlparse, urljoin
 from lxml import html
 from bs4 import BeautifulSoup
-import requests
+# import requests
 
 # Make sure to defragment the URLs, i.e. remove the fragment part. DONE
 # look into lxml and beautifulsoup
@@ -22,10 +22,10 @@ import requests
 # You should write simple automatic trap detection systems based on repeated URL patterns and/or (ideally) DONE
 # webpage content similarity repetition over a certain amount of chained pages (the threshold definition is up to you!)
 
-urls =  ["\w*.ics.uci.edu/\w*",
-        "\w*.cs.uci.edu/\w*",
-        "\w*.informatics.uci.edu/\w*",
-        "\w*.stat.uci.edu/\w*"]
+urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
+        r"^https?://(?:\w+\.)?cs.uci.edu/?.*",
+        r"^https?://(?:\w+\.)?informatics.uci.edu/?.*",
+        r"^https?://(?:\w+\.)?stat.uci.edu/?.*"]
 
 # visited_urls = {}
 def scraper(url, resp):
@@ -55,16 +55,16 @@ def extract_next_links(url, resp):
 
     # check resp.status, make sure it returns 200 before we crawl
     # go thru resp.raw_response and look for <a> anchor tags
-    # convert to a string using resp.raw_response.content.decode("utf-8");
 
     # 204 is nothing on page
     if resp.status != 200:
         return []
-    html = resp.raw_response.content.decode("utf-8")
+    html = resp.raw_response.content
     return extractLink(html, url)
 
 def validLink(link):
     """Checks if the link matches any of the required links to crawl. Returns true if matches, returns false otherwise."""
+    print(f"in valid link: {link}")
     for i in urls:
         if len(re.findall(i, link)) > 0:
             return True
