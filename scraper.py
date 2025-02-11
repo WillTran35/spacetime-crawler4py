@@ -78,8 +78,8 @@ def is_valid(url):
         parsed = urlparse(url)  # returns a ParsedObject
         if parsed.scheme not in {"http", "https"}:  # checks the protocol; absolute urls must have http/https
             return False
-        elif not validLink(url):  # checks the domain
-            return False
+        # elif not validLink(url):  # checks the domain
+        #     return False
         # elif getNumTokens(url) < 50 or checkRatio(url) < 0.1:  # Crawls all pages with high textual information content
         #     return False
         # needs to check if it works outside of site
