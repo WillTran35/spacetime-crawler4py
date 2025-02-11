@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlparse, urljoin
 from lxml import html
 from bs4 import BeautifulSoup
-
+import requests
 
 # Make sure to defragment the URLs, i.e. remove the fragment part. DONE
 # look into lxml and beautifulsoup
@@ -78,8 +78,8 @@ def is_valid(url):
         parsed = urlparse(url)  # returns a ParsedObject
         if parsed.scheme not in {"http", "https"}:  # checks the protocol; absolute urls must have http/https
             return False
-        # elif not validLink(url):  # checks the domain
-        #     return False
+        elif not validLink(url):  # checks the domain
+            return False
         # elif getNumTokens(url) < 50 or checkRatio(url) < 0.1:  # Crawls all pages with high textual information content
         #     return False
         # needs to check if it works outside of site
@@ -116,3 +116,54 @@ def is_relative(url: str):
     """Checks if the url is a relative url. A relative url is a direction to a page without a scheme nor domain."""
     parsed = urlparse(url)
     return parsed.scheme not in {'https', 'http'} or parsed.netloc == ""
+
+
+def tokenizeline(self, line: str) -> list:
+    """Helper function to tokenize an individual line."""
+    # This function runs in O(n) time complexity, where n is the length of the line.
+    # It must iterate through the entire string getting each letter.
+    result = []
+    string = ""
+    line = line.lower()
+    pattern = "[a-zA-Z0-9]"
+    for i in line:
+        if re.search(pattern, i):
+            string += i
+        else:
+            if string != "":
+                result.append(string)
+            string = ""
+    if string != "":
+        result.append(string)
+    return result
+
+
+def getNumTokens(self, url: str) -> int:
+    # Crawl all pages with high textual information content
+    # crawl if text to html ratio is at least 0.1 and over 50 tokens
+
+    # check text to html ratio
+
+    response = requests.get(url)
+    html_content = response.text
+
+    soup = BeautifulSoup(html_content, "html.parser")
+    text = soup.get_text(separator=" ").strip()
+
+    result = set(self.tokenizeline(text))
+
+    return len(result)
+
+
+def checkRatio(self, url: str) -> float:
+    """Checks the text to html ratio. Only crawl pages with high textual information (ratio > 0.1)."""
+    response = requests.get(url)
+    html_content = response.text
+
+    soup = BeautifulSoup(html_content, "html.parser")
+    text = soup.get_text(separator=" ").strip()
+    text_len = len(text)
+    html_length = len(html_content)
+
+    return text_len / html_length if html_length > 0 else 0
+
