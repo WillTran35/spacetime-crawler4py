@@ -2,7 +2,7 @@ import re
 from urllib.parse import urlparse, urljoin
 from lxml import html
 from bs4 import BeautifulSoup
-# import requests
+
 from utils.download import download
 
 # Make sure to defragment the URLs, i.e. remove the fragment part. DONE
