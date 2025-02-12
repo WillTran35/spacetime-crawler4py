@@ -151,7 +151,7 @@ def getNumTokens(response) -> int:
     text = soup.get_text(separator=" ").strip()
 
     result = set(tokenizeline(text))
-
+    print(f"THis is the num of tokens: f{len(result)}")
     return len(result)
 
 
@@ -163,6 +163,7 @@ def checkRatio(response) -> float:
     text = soup.get_text(separator=" ").strip()
     text_len = len(text)
     html_length = len(str(soup))
-
+    result = text_len / html_length if html_length > 0 else 0
+    print(f"This is the text: html : {result}")
     return text_len / html_length if html_length > 0 else 0
 
