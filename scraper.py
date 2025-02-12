@@ -30,7 +30,7 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
 
 # visited_urls = {}
 def scraper(url, resp):
-    if not (200 <= resp.status_code < 300):
+    if not (200 <= resp.status < 300):
         return []
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
