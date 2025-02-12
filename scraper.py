@@ -158,11 +158,11 @@ def getNumTokens(response) -> int:
 def checkRatio(response) -> float:
     """Checks the text to html ratio. Only crawl pages with high textual information (ratio > 0.1)."""
 
-    html_content = html.fromstring(response.raw_response.content)
-    soup = BeautifulSoup(html_content, "html.parser")
+    # html_content = html.fromstring()
+    soup = BeautifulSoup(response.raw_response.content, "html.parser")
     text = soup.get_text(separator=" ").strip()
     text_len = len(text)
-    html_length = len(html_content)
+    html_length = len(str(soup))
 
     return text_len / html_length if html_length > 0 else 0
 
