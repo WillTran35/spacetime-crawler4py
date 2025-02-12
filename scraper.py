@@ -30,7 +30,6 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
 
 # visited_urls = {}
 def scraper(url, resp):
-
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -60,7 +59,9 @@ def extract_next_links(url, resp):
 
     # 204 is nothing on page
     if not (200 <= resp.status < 300):
-        # only handle sucess
+        # only handle success
+        return []
+    elif getNumTokens(url) < 50 or checkRatio(url) < 0.1:  # Crawls all pages with high textual information content
         return []
     html = resp.raw_response.content
     return extractLink(html, url)
@@ -138,14 +139,13 @@ def tokenizeline(self, line: str) -> list:
     return result
 
 
-def getNumTokens(url: str) -> int:
+def getNumTokens(response) -> int:
     # Crawl all pages with high textual information content
     # crawl if text to html ratio is at least 0.1 and over 50 tokens
 
     # check text to html ratio
 
-    response = download(url)
-    html_content = response.text
+    html_content = html.fromstring(response.raw_response.content)
 
     soup = BeautifulSoup(html_content, "html.parser")
     text = soup.get_text(separator=" ").strip()
@@ -155,11 +155,10 @@ def getNumTokens(url: str) -> int:
     return len(result)
 
 
-def checkRatio( url: str) -> float:
+def checkRatio(response) -> float:
     """Checks the text to html ratio. Only crawl pages with high textual information (ratio > 0.1)."""
-    response = requests.get(url)
-    html_content = response.text
 
+    html_content = html.fromstring(response.raw_response.content)
     soup = BeautifulSoup(html_content, "html.parser")
     text = soup.get_text(separator=" ").strip()
     text_len = len(text)
