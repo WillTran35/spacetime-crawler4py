@@ -3,6 +3,7 @@ from urllib.parse import urlparse, urljoin
 from lxml import html
 from bs4 import BeautifulSoup
 # import requests
+from utils.download import download
 
 # Make sure to defragment the URLs, i.e. remove the fragment part. DONE
 # look into lxml and beautifulsoup
@@ -35,7 +36,7 @@ def scraper(url, resp):
 def extractLink(page : str, url : str) -> set:
     """Helper function to help extract all links from a given url."""
     # '<a href="https://example.com">Example</a> <a href="https://test.com">Test</a>'
-    tree = html.fromstring(page)
+    tree = html.fromstring(page, recover=True)
     links: list[str] = tree.xpath("//a/@href")
     # we should make sure all the links are trimmed here and transform all relative to absolute urls
     links = [trimFragment(link) for link in links]  # trims the fragment part out of all urls
@@ -57,9 +58,9 @@ def extract_next_links(url, resp):
     # go thru resp.raw_response and look for <a> anchor tags
 
     # 204 is nothing on page
-    if resp.status != 200:
+    if resp.status not in range(200, 399):
         return []
-    html = resp.raw_response.content
+    html = resp.raw_response.content.decode('utf-8', errors="ignore")
     return extractLink(html, url)
 
 def validLink(link):
@@ -107,9 +108,6 @@ def trimFragment(url : str ):
     return url.split("#", 1)[0]
 
 
-
-
-
 # Detect and avoid sets of similar pages with no information
 
 def is_relative(url: str):
@@ -138,24 +136,24 @@ def tokenizeline(self, line: str) -> list:
     return result
 
 
-def getNumTokens(self, url: str) -> int:
+def getNumTokens(url: str) -> int:
     # Crawl all pages with high textual information content
     # crawl if text to html ratio is at least 0.1 and over 50 tokens
 
     # check text to html ratio
 
-    response = requests.get(url)
+    response = download(url)
     html_content = response.text
 
     soup = BeautifulSoup(html_content, "html.parser")
     text = soup.get_text(separator=" ").strip()
 
-    result = set(self.tokenizeline(text))
+    result = set(tokenizeline(text))
 
     return len(result)
 
 
-def checkRatio(self, url: str) -> float:
+def checkRatio( url: str) -> float:
     """Checks the text to html ratio. Only crawl pages with high textual information (ratio > 0.1)."""
     response = requests.get(url)
     html_content = response.text
