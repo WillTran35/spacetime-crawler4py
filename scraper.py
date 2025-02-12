@@ -65,7 +65,7 @@ def extract_next_links(url, resp):
 
 def validLink(link):
     """Checks if the link matches any of the required links to crawl. Returns true if matches, returns false otherwise."""
-    print(f"in valid link: {link}")
+    # print(f"in valid link: {link}")
     for i in urls:
         if len(re.findall(i, link)) > 0:
             return True
