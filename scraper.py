@@ -60,7 +60,7 @@ def extract_next_links(url, resp):
     # 204 is nothing on page
     if resp.status not in range(200, 399):
         return []
-    html = resp.raw_response.content.decode('utf-8', errors="ignore")
+    html = resp.raw_response.content
     return extractLink(html, url)
 
 def validLink(link):
