@@ -145,9 +145,9 @@ def getNumTokens(response) -> int:
 
     # check text to html ratio
 
-    html_content = html.fromstring(response.raw_response.content)
 
-    soup = BeautifulSoup(html_content, "html.parser")
+
+    soup = BeautifulSoup(response.raw_response.content, "html.parser")
     text = soup.get_text(separator=" ").strip()
 
     result = set(tokenizeline(text))
