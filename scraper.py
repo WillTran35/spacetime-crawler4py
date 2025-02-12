@@ -119,7 +119,7 @@ def is_relative(url: str):
     return parsed.scheme not in {'https', 'http'} or parsed.netloc == ""
 
 
-def tokenizeline(self, line: str) -> list:
+def tokenizeline(line: str) -> list:
     """Helper function to tokenize an individual line."""
     # This function runs in O(n) time complexity, where n is the length of the line.
     # It must iterate through the entire string getting each letter.
