@@ -36,7 +36,7 @@ def scraper(url, resp):
 def extractLink(page : str, url : str) -> set:
     """Helper function to help extract all links from a given url."""
     # '<a href="https://example.com">Example</a> <a href="https://test.com">Test</a>'
-    tree = html.fromstring(page, recover=True)
+    tree = html.fromstring(page)
     links: list[str] = tree.xpath("//a/@href")
     # we should make sure all the links are trimmed here and transform all relative to absolute urls
     links = [trimFragment(link) for link in links]  # trims the fragment part out of all urls
