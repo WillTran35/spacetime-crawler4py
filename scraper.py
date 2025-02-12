@@ -11,8 +11,8 @@ from utils.download import download
 # Crawl all pages with high textual information content DONE
 # Detect and avoid infinite traps -> we can make a set of urls instead of a list DONE
 # Detect and avoid sets of similar pages with no information
-# Detect redirects and if the page redirects your crawler, index the redirected content DONE
-# Detect and avoid dead URLs that return a 200 status but no data
+# Detect redirects and if the page redirects your crawler, index the redirected content
+# Detect and avoid dead URLs that return a 200 status but no data DONE
 # Detect and avoid crawling very large files, especially if they have  low information value DONE (checked ratio)
 
 # Please remember to transform relative to absolute URLs DONE
@@ -61,6 +61,9 @@ def extract_next_links(url, resp):
     if not (200 <= resp.status < 300):
         # only handle success
         return []
+    elif (300 <= resp.status < 399):
+        return [resp.headers['Location']]
+
     elif getNumTokens(resp) < 50 or checkRatio(resp) < 0.1:  # Crawls all pages with high textual information content
         return []
     html = resp.raw_response.content
@@ -145,13 +148,11 @@ def getNumTokens(response) -> int:
 
     # check text to html ratio
 
-
-
     soup = BeautifulSoup(response.raw_response.content, "html.parser")
     text = soup.get_text(separator=" ").strip()
 
     result = set(tokenizeline(text))
-    print(f"THis is the num of tokens: {len(result)}")
+    # print(f"THis is the num of tokens: {len(result)}")
     return len(result)
 
 
@@ -164,6 +165,6 @@ def checkRatio(response) -> float:
     text_len = len(html_content.text_content())
     html_length = len(html.tostring(html_content))
     result = text_len / html_length if html_length > 0 else 0
-    print(f"This is the text: html : {result} textlen {text_len} html {html_length}")
+    # print(f"This is the text: html : {result} textlen {text_len} html {html_length}")
     return text_len / html_length if html_length > 0 else 0
 
