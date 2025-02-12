@@ -30,6 +30,8 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
 
 # visited_urls = {}
 def scraper(url, resp):
+    if not (200 <= resp.status_code < 300):
+        return []
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -58,8 +60,7 @@ def extract_next_links(url, resp):
     # go thru resp.raw_response and look for <a> anchor tags
 
     # 204 is nothing on page
-    if not (200 <= resp.status_code < 300):
-        return []
+
     html = resp.raw_response.content
     return extractLink(html, url)
 
