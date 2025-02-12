@@ -58,11 +58,16 @@ def extract_next_links(url, resp):
     # go thru resp.raw_response and look for <a> anchor tags
 
     # 204 is nothing on page
+    if 400 <= resp.status < 500:
+        return []  # dont scrape at 400 error
+    if 300 <= resp.status < 400:
+        print("in 300")
+        return [resp.headers['Location']]
     if not (200 <= resp.status < 300):
         # only handle success
+        print("failed")
         return []
-    elif (300 <= resp.status < 399):
-        return [resp.headers['Location']]
+
 
     elif getNumTokens(resp) < 50 or checkRatio(resp) < 0.1:  # Crawls all pages with high textual information content
         return []
