@@ -58,7 +58,7 @@ def extract_next_links(url, resp):
     # go thru resp.raw_response and look for <a> anchor tags
 
     # 204 is nothing on page
-    if resp.status not in range(200, 399):
+    if not (200 <= resp.status_code < 300):
         return []
     html = resp.raw_response.content
     return extractLink(html, url)
