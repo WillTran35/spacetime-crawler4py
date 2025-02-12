@@ -61,7 +61,7 @@ def extract_next_links(url, resp):
     if not (200 <= resp.status < 300):
         # only handle success
         return []
-    elif getNumTokens(url) < 50 or checkRatio(url) < 0.1:  # Crawls all pages with high textual information content
+    elif getNumTokens(resp) < 50 or checkRatio(resp) < 0.1:  # Crawls all pages with high textual information content
         return []
     html = resp.raw_response.content
     return extractLink(html, url)
