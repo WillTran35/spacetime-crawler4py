@@ -33,7 +33,7 @@ class Worker(Thread):
                 self.frontier.add_url(scraped_url)
             if scraped_urls:  # if this url is worth scraping, it is considered a valid scrape
                 with open("urls.txt", "a") as x:
-                    x.write("New Scraped: " + tbd_url + "\n")
-                    print("done")
+                    x.write("New Scraped2: " + tbd_url + "\n")
+                    print(f"done, length of scraped url: {len(scraped_urls)}")
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
