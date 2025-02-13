@@ -56,7 +56,7 @@ def trapDection(linkList : list):
     result = []
     for i in linkList:
         for j in urls_to_avoid:
-            if not re.match(j, i):
+            if re.search(j, i) is None:
                 result.append(i)
         if i in visited_urls:
             return []  # don't scrape a url we already scraped
