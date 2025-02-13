@@ -34,7 +34,9 @@ urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*' , r'.*/events/.+$', r'.*/event/.+$', r
 
 visited_urls = set()
 def scraper(url, resp):
-
+    if isUrlToAvoid(url):
+        print(f"avoiding url: {url}")
+        return []
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
@@ -43,6 +45,11 @@ def simHash():
     # generate hash value with b bits , hash value should be unique for each word
 
     pass
+def isUrlToAvoid(url):
+    for i in urls_to_avoid:
+        if len(re.findall(i,url)) > 0:
+            return True
+    return False
 
 def trapDection(linkList : list):
     # handle trap detection here: we will go through each link and see if they are relatively similar to each other ?
