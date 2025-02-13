@@ -31,8 +31,9 @@ class Worker(Thread):
             for scraped_url in scraped_urls:
                 # if not (self.frontier.checkRatio() < 0.1 or self.frontier.getNumTokens() < 50):
                 self.frontier.add_url(scraped_url)
-            with open("urls.txt", "a") as x:
-                x.write("Scraped: " + tbd_url + "\n")
-                print("done")
+            if scraped_urls:  # if this url is worth scraping, it is considered a valid scrape
+                with open("urls.txt", "a") as x:
+                    x.write("New Scraped: " + tbd_url + "\n")
+                    print("done")
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
