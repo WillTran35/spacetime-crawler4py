@@ -183,13 +183,15 @@ def getNumTokens(response) -> int:
     # crawl if text to html ratio is at least 0.1 and over 50 tokens
 
     # check text to html ratio
+    if response.raw_response is not None:
+        soup = BeautifulSoup(response.raw_response.content, "html.parser")
+        text = soup.get_text(separator=" ").strip()
 
-    soup = BeautifulSoup(response.raw_response.content, "html.parser")
-    text = soup.get_text(separator=" ").strip()
+        result = set(tokenizeline(text))
+        # print(f"THis is the num of tokens: {len(result)}")
+        return len(result)
 
-    result = set(tokenizeline(text))
-    # print(f"THis is the num of tokens: {len(result)}")
-    return len(result)
+    return 0
 
 
 def checkRatio(response) -> float:

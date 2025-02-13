@@ -18,6 +18,7 @@ class Worker(Thread):
         
     def run(self):
         while True:
+            print(len(self.frontier.to_be_downloaded))
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
