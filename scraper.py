@@ -38,6 +38,12 @@ def scraper(url, resp):
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
+def simHash():
+    # tokenize the document
+    # generate hash value with b bits , hash value should be unique for each word
+
+    pass
+
 def trapDection(linkList : list):
     # handle trap detection here: we will go through each link and see if they are relatively similar to each other ?
     #
@@ -59,6 +65,7 @@ def trapDection(linkList : list):
             if re.search(j, i) is None:
                 result.append(i)
         if i in visited_urls:
+            print("rejecting, matched already visited url")
             return []  # don't scrape a url we already scraped
 
     return result
@@ -92,16 +99,17 @@ def extract_next_links(url, resp):
 
     # 204 is nothing on page
     if 400 <= resp.status < 500:
-        print("in 400")
+        print("Error. 400 status")
         return []  # dont scrape at 400 error
     if 300 <= resp.status < 400:  # redirection
         print("in 300")
         return [resp.raw_response.get("Location")]
     if not (200 <= resp.status < 300):
         # only handle success
-        print("failed")
+        print("resp status not in 200 - 299")
         return []
     elif getNumTokens(resp) < 50 or checkRatio(resp) < 0.1:  # Crawls all pages with high textual information content
+        print(f"number tokens: {getNumTokens(resp)} or ratio: {checkRatio(resp)}")
         return []
     html = resp.raw_response.content
     return extractLink(html, url)
