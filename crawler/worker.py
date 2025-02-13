@@ -32,5 +32,6 @@ class Worker(Thread):
                 self.frontier.add_url(scraped_url)
             with open("urls.txt", "a") as x:
                 x.write("Scraped: " + tbd_url + "\n")
+                print("done")
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
