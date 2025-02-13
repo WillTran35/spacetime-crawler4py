@@ -29,7 +29,7 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
         r"^https?://(?:\w+\.)?stat.uci.edu/?.*"]
 
 #keep /events/ or /event/ but if has stuff after it we dont scrape
-urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*' , r'.*/events/.+$', r'.*/event/.+$', r'.*\d{4}-\d{2}']
+urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*' , r'.*/events/.+$', r'.*/event/.+$', r'.*\d{4}-\d{2}', r'.*/people.*', r'.*/happening.*']
 # filter out events with date after it \d4-\d2-\d2
 
 visited_urls = set()
@@ -64,6 +64,8 @@ def trapDection(linkList : list):
         for j in urls_to_avoid:
             if re.search(j, i) is None:
                 result.append(i)
+            else:
+                print(f"rejected url found in urls_to_avoid: {i}")
         if i in visited_urls:
             print("rejecting, matched already visited url")
             return []  # don't scrape a url we already scraped
