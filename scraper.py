@@ -28,10 +28,37 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
         r"^https?://(?:\w+\.)?informatics.uci.edu/?.*",
         r"^https?://(?:\w+\.)?stat.uci.edu/?.*"]
 
-# visited_urls = {}
+urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*']
+# filter out events with date after it \d4-\d2-\d2
+
+visited_urls = set()
 def scraper(url, resp):
+
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
+
+def trapDection(linkList : list):
+    # handle trap detection here: we will go through each link and see if they are relatively similar to each other ?
+    #
+    # You should write simple automatic trap detection systems based on repeated URL patterns and/or (ideally)
+    # webpage content similarity repetition over a certain amount of chained pages (the threshold definition is up to you!)
+    #
+    # set a crawl depth limit (ex. 5 pages of pagination)
+    # filter out session based urls (ignore ?session=xyz)
+    # detect redirect loops (stop after 5 redirects)
+    # monitor crawl speed (dont go on pages that take too long) this can be taken care of by looking at text content
+    # use robots.txt (respect site rules for bots)
+
+    # implement simhash to find similar pages
+    result = []
+    for i in linkList:
+        for j in urls_to_avoid:
+            if not re.match(j, i):
+                result.append(i)
+        if i in visited_urls:
+            return []  # don't scrape a url we already scraped
+
+    return result
 
 def extractLink(page : str, url : str) -> set:
     """Helper function to help extract all links from a given url."""
@@ -41,6 +68,9 @@ def extractLink(page : str, url : str) -> set:
     # we should make sure all the links are trimmed here and transform all relative to absolute urls
     links = [trimFragment(link) for link in links]  # trims the fragment part out of all urls
     links = [urljoin(url, link) if is_relative(link) else link for link in links]
+
+    links = trapDection(links)
+    visited_urls.add(url)
     return set(links)  # no duplicate links to avoid traps
 
 def extract_next_links(url, resp):
@@ -59,16 +89,15 @@ def extract_next_links(url, resp):
 
     # 204 is nothing on page
     if 400 <= resp.status < 500:
+        print("in 400")
         return []  # dont scrape at 400 error
-    if 300 <= resp.status < 400:
+    if 300 <= resp.status < 400:  # redirection
         print("in 300")
-        return [resp.headers['Location']]
+        return [resp.raw_response.get("Location")]
     if not (200 <= resp.status < 300):
         # only handle success
         print("failed")
         return []
-
-
     elif getNumTokens(resp) < 50 or checkRatio(resp) < 0.1:  # Crawls all pages with high textual information content
         return []
     html = resp.raw_response.content
