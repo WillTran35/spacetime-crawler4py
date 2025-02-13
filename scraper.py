@@ -49,7 +49,9 @@ def trapDection(linkList : list):
     # monitor crawl speed (dont go on pages that take too long) this can be taken care of by looking at text content
     # use robots.txt (respect site rules for bots)
 
-    # implement simhash to find similar pages
+    # implement simhash to find similar pages -> gives u a hash value and u see if this is hash value exists already,
+    # if it does , dont scrape
+
     result = []
     for i in linkList:
         for j in urls_to_avoid:
