@@ -30,7 +30,7 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
 
 #keep /events/ or /event/ but if has stuff after it we dont scrape
 urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*' , r'.*/events/.+$', r'.*/event/.+$', r'.*\d{4}-\d{2}', r'.*/people.*',
-                 r'.*/happening.*', r'.*/page/\d+']
+                 r'.*/happening.*', r'.*/page/\d+$']
 # filter out events with date after it \d4-\d2-\d2
 
 visited_urls = set()
