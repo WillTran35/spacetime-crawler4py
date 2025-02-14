@@ -30,7 +30,7 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
 
 #keep /events/ or /event/ but if has stuff after it we dont scrape
 urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*$' , r'.*/events/.+$', r'.*/event/.+$', r'.*\d{4}-\d{2}', r'.*/people.*',
-                 r'.*/happening.*', r'.*/page/\d+$']
+                 r'.*/happening.*']
 # filter out events with date after it \d4-\d2-\d2
 
 visited_urls = set()
@@ -122,6 +122,9 @@ def extract_next_links(url, resp):
         print(f"number tokens: {getNumTokens(resp)} or ratio: {checkRatio(resp)}")
         return []
     html = resp.raw_response.content
+    if (len(html) > 2_097_152):
+        print(f"length of content too big: {len(html)}")
+        return []
     return extractLink(html, url)
 
 def validLink(link):
