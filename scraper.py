@@ -29,7 +29,8 @@ urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
         r"^https?://(?:\w+\.)?stat.uci.edu/?.*"]
 
 #keep /events/ or /event/ but if has stuff after it we dont scrape
-urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*' , r'.*/events/.+$', r'.*/event/.+$', r'.*\d{4}-\d{2}', r'.*/people.*', r'.*/happening.*']
+urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*' , r'.*/events/.+$', r'.*/event/.+$', r'.*\d{4}-\d{2}', r'.*/people.*',
+                 r'.*/happening.*', r'.*/page/\d+']
 # filter out events with date after it \d4-\d2-\d2
 
 visited_urls = set()
@@ -43,11 +44,11 @@ def scraper(url, resp):
 def simHash():
     # tokenize the document
     # generate hash value with b bits , hash value should be unique for each word
-
     pass
+
 def isUrlToAvoid(url):
     for i in urls_to_avoid:
-        if len(re.findall(i,url)) > 0:
+        if len(re.findall(i, url)) > 0:
             return True
     return False
 
