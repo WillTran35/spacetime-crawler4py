@@ -22,7 +22,7 @@ class Worker(Thread):
             print(len(self.frontier.to_be_downloaded))
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
-                print(len(visited_urls))
+                print(visited_urls)
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 break
             resp = download(tbd_url, self.config, self.logger)
