@@ -34,33 +34,33 @@ class Worker(Thread):
                 # if not (self.frontier.checkRatio() < 0.1 or self.frontier.getNumTokens() < 50):
                 self.frontier.add_url(scraped_url)
             if scraped_urls:  # if this url is worth scraping, it is considered a valid scrape
-                with open("urlsNEW.txt", "a") as x:
+                with open("allurlsNEW.txt", "a") as x:
                     x.write("New Scraped NEW NEW : " + tbd_url + "\n\n")
                     print(f"done, length of scraped url: {len(scraped_urls)}")
                 with open("allHashes.txt", "a") as y:
-                    y.write("hashin....")
+                    y.write("hashin....\n")
                     for i in all_hashes:
-                        y.write(f"{i}, {all_hashes[i]}")
+                        y.write(f"{i}, {all_hashes[i]}\n")
                     y.write("\nDONE!")
                     y.write("\n\n\n\n")
-                with open("subdomains.txt", "a") as z:
-                    z.write("subdomains....")
+                with open("all_subdomains.txt", "a") as z:
+                    z.write("subdomains....\n")
                     for i in subdomains:
-                        z.write(f"{i}, {subdomains[i]}")
+                        z.write(f"{i}, {subdomains[i]}\n")
                     z.write("\nDONE!")
                     z.write("\n\n\n\n")
 
                 with open("all_pages.txt", "a") as z:
-                    z.write("ALL PAGES....")
+                    z.write("ALL PAGES....\n")
                     for i in all_pages:
-                        z.write(f"{i}, {all_pages[i]}")
+                        z.write(f"{i}, {all_pages[i]}\n")
                     z.write("\nDONE!")
                     z.write("\n\n\n\n")
 
                 with open("all_words.txt", "a") as z:
-                    z.write("ALL WORDS....")
+                    z.write("ALL WORDS....\n")
                     for i in all_words:
-                        z.write(f"{i}, {all_words[i]}")
+                        z.write(f"{i}, {all_words[i]}\n")
                     z.write("DONE!")
                     z.write("\n\n\n\n")
 
