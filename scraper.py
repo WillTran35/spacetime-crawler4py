@@ -147,8 +147,10 @@ def extractLink(page : str, url : str) -> set:
 
     return set(links)  # no duplicate links to avoid traps
 
+
 def isSimilar(hash_value):
     for key, value in all_hashes.items():
+        print(f"this is key value {key}: {value}")
         distance = hamming_distance(hash_value, value)
         if distance <= 3:
             print(f"rejecting {key}, already found similar hash, distance is {distance}")
