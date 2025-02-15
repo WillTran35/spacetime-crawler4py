@@ -127,17 +127,6 @@ def getAllSubdomains(linksList):
 def extractLink(page : str, url : str) -> set:
     """Helper function to help extract all links from a given url."""
     # '<a href="https://example.com">Example</a> <a href="https://test.com">Test</a>'
-    tree = html.fromstring(page)
-    links: list[str] = tree.xpath("//a/@href")
-    # we should make sure all the links are trimmed here and transform all relative to absolute urls
-    links = [trimFragment(link) for link in links]  # trims the fragment part out of all urls
-    links = [urljoin(url, link) if is_relative(link) else link for link in links]
-
-    getAllSubdomains(links)
-
-    links = trapDection(links)
-    visited_urls.add(url)
-
     soup = BeautifulSoup(page, "html.parser")
     text = soup.get_text(separator=" ").strip()
     if isSimilar(simhash(text)):
@@ -145,7 +134,16 @@ def extractLink(page : str, url : str) -> set:
     if url not in all_hashes:
         all_hashes[url] = simhash(text)
 
+    tree = html.fromstring(page)
+    links: list[str] = tree.xpath("//a/@href")
+    # we should make sure all the links are trimmed here and transform all relative to absolute urls
+    links = [trimFragment(link) for link in links]  # trims the fragment part out of all urls
+    links = [urljoin(url, link) if is_relative(link) else link for link in links]
 
+    getAllSubdomains(links)
+    visited_urls.add(url)
+
+    links = trapDection(links)
     return set(links)  # no duplicate links to avoid traps
 
 
