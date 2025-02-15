@@ -109,7 +109,7 @@ def trapDection(linkList : list):
     result = []
     for i in linkList:
         for j in urls_to_avoid:
-            if re.search(j, i) is None:
+            if re.search(j, i) is None and validLink(i):
                 result.append(i)
             else:
                 print(f"rejected url found in urls_to_avoid: {i}")
