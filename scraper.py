@@ -2,6 +2,7 @@ import re
 from urllib.parse import urlparse, urljoin
 from lxml import html
 from bs4 import BeautifulSoup
+import hashlib
 
 from utils.download import download
 
@@ -23,28 +24,66 @@ from utils.download import download
 # You should write simple automatic trap detection systems based on repeated URL patterns and/or (ideally) DONE
 # webpage content similarity repetition over a certain amount of chained pages (the threshold definition is up to you!)
 
-urls = [r"^https?://(?:\w+\.)?ics.uci.edu/?.*",
-        r"^https?://(?:\w+\.)?cs.uci.edu/?.*",
-        r"^https?://(?:\w+\.)?informatics.uci.edu/?.*",
-        r"^https?://(?:\w+\.)?stat.uci.edu/?.*"]
+urls = [r"^https?://(?:\w+\.)?ics\.uci\.edu/?.*",
+        r"^https?://(?:\w+\.)?cs\.uci\.edu/?.*",
+        r"^https?://(?:\w+\.)?informatics\.uci\.edu/?.*",
+        r"^https?://(?:\w+\.)?stat\.uci\.edu/?.*"]
 
 #keep /events/ or /event/ but if has stuff after it we dont scrape
 urls_to_avoid = [r'.*\d{4}-\d{2}-\d{2}.*$' , r'.*/events/.+$', r'.*/event/.+$', r'.*\d{4}-\d{2}', r'.*/people.*',
                  r'.*/happening.*']
-# filter out events with date after it \d4-\d2-\d2
+
+all_hashes = {}  # key: url, value [hashvalue]
+
+subdomains = {}  # dictionary that holds all subdomains and their respective pages
+
+# longest page in terms of words
+all_pages = {}  # pages : word count
+
+# 50 most common words
+all_words = {}  # word : count
 
 visited_urls = set()
 def scraper(url, resp):
     if isUrlToAvoid(url):
         print(f"avoiding url: {url}")
         return []
+    if url in visited_urls:
+        print("rejecting, matched already visited url")
+        return []  # don't scrape a url we already scraped
     links = extract_next_links(url, resp)
     return [link for link in links if is_valid(link)]
 
-def simHash():
-    # tokenize the document
-    # generate hash value with b bits , hash value should be unique for each word
-    pass
+def hash_function(token):
+    """Hashes a word and converts to 64 bit representation"""
+    return int(hashlib.md5(token.encode()).hexdigest(), 16) & ((1 << 64) - 1)
+
+def simhash(text):
+    """Computes the Simhash fingerprint for text"""
+    # tokenize the words
+    words = tokenizeline(text)
+
+    vector = [0] * 64
+
+    for word in words:
+        hash_value = hash_function(word)
+        for i in range(64):  # Iterate over each bit in 64-bit hash
+            if (hash_value >> i) & 1:  # If bit is 1, increment vector
+                vector[i] += 1
+            else:
+                vector[i] -= 1
+    fingerprint = 0
+    for i in range (64):
+        if vector[i] > 0:
+            fingerprint |= (1 << i)
+
+    return fingerprint
+
+
+def hamming_distance(hash1, hash2):
+    """Computes the Hamming distance between two SimHashes."""
+    return bin(hash1 ^ hash2).count("1")  # XOR and count 1s
+
 
 def isUrlToAvoid(url):
     for i in urls_to_avoid:
@@ -74,11 +113,16 @@ def trapDection(linkList : list):
                 result.append(i)
             else:
                 print(f"rejected url found in urls_to_avoid: {i}")
-        if i in visited_urls:
-            print("rejecting, matched already visited url")
-            return []  # don't scrape a url we already scraped
 
     return result
+
+def getAllSubdomains(linksList):
+    # only get the subdomains if when parsed is in ics.uci.edu
+    for i in linksList:
+        netloc = urlparse(i).netloc  # Extract subdomain
+        if re.search(r"(?:\w+\.)?ics\.uci\.edu$", netloc):
+            subdomains[netloc] = subdomains.get(netloc, 0) + 1
+
 
 def extractLink(page : str, url : str) -> set:
     """Helper function to help extract all links from a given url."""
@@ -89,9 +133,28 @@ def extractLink(page : str, url : str) -> set:
     links = [trimFragment(link) for link in links]  # trims the fragment part out of all urls
     links = [urljoin(url, link) if is_relative(link) else link for link in links]
 
+    getAllSubdomains(links)
+
     links = trapDection(links)
     visited_urls.add(url)
+
+    soup = BeautifulSoup(page, "html.parser")
+    text = soup.get_text(separator=" ").strip()
+    if url not in all_hashes:
+        all_hashes[url] = simhash(text)
+    if isSimilar(all_hashes[url]):
+        return set()
+
     return set(links)  # no duplicate links to avoid traps
+
+def isSimilar(hash_value):
+    for key, value in all_hashes.items():
+        distance = hamming_distance(hash_value, value)
+        if distance <= 3:
+            print(f"rejecting {key}, already found similar hash")
+            return True
+    print("did not find similar hash, proceeding...")
+    return False
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -108,6 +171,12 @@ def extract_next_links(url, resp):
     # go thru resp.raw_response and look for <a> anchor tags
 
     # 204 is nothing on page
+    if not validLink(url):
+        print("not a valid link, not in the 4 required links ")
+        return []
+    if resp.raw_response is None:
+        print("error, raw_response is None")
+        return []
     if 400 <= resp.status < 500:
         print("Error. 400 status")
         return []  # dont scrape at 400 error
@@ -119,10 +188,10 @@ def extract_next_links(url, resp):
         print("resp status not in 200 - 299")
         return []
     elif getNumTokens(resp) < 50 or checkRatio(resp) < 0.1:  # Crawls all pages with high textual information content
-        print(f"number tokens: {getNumTokens(resp)} or ratio: {checkRatio(resp)}")
+        print(f"number tokens: {getNumTokens(resp)} or ratio: {checkRatio(resp)} too high")
         return []
     html = resp.raw_response.content
-    if (len(html) > 2_097_152):
+    if len(html) > 2_097_152:
         print(f"length of content too big: {len(html)}")
         return []
     return extractLink(html, url)
@@ -197,7 +266,21 @@ def tokenizeline(line: str) -> list:
             string = ""
     if string != "":
         result.append(string)
+    computeWordFrequencies(result)
+
     return result
+
+
+def computeWordFrequencies(token:list):
+    """Write another method/function that counts the number of occurrences of each token in the token list.
+    Remember that you should write this assignment yourself from scratch, so you are not allowed to import
+    a counter when the assignment asks you to write that method."""
+
+    # This function runs in O(n) time where n is the length of the list. It iterates through the list and adds
+    # itself to the dictionary.
+    for i in token:
+        all_words[i] = all_words.setdefault(i, 0) + 1
+
 
 
 def getNumTokens(response) -> int:
@@ -210,6 +293,9 @@ def getNumTokens(response) -> int:
         text = soup.get_text(separator=" ").strip()
 
         result = set(tokenizeline(text))
+        if response.url not in all_pages:
+            all_pages[response.url] = len(result)
+        # all_pages[response.url] = all_pages.get(response.url, 0) + len(result)
         # print(f"THis is the num of tokens: {len(result)}")
         return len(result)
 
