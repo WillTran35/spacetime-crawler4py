@@ -151,7 +151,7 @@ def isSimilar(hash_value):
     for key, value in all_hashes.items():
         distance = hamming_distance(hash_value, value)
         if distance <= 3:
-            print(f"rejecting {key}, already found similar hash")
+            print(f"rejecting {key}, already found similar hash, distance is {distance}")
             return True
     print("did not find similar hash, proceeding...")
     return False
