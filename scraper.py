@@ -229,7 +229,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|img|apk|war|sql)$", parsed.path.lower()) #checks the end of the url
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|img|apk|war|sql|mpg)$", parsed.path.lower()) #checks the end of the url
         # ex. "https://user:pass@example.com:8080/path/to/page?query=value#fragment"
         # ParseResult(scheme='https', netloc='user:pass@example.com:8080', path='/path/to/page',
         #             params='', query='query=value', fragment='fragment')
