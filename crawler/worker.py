@@ -38,31 +38,31 @@ class Worker(Thread):
                     x.write("New Scraped NEW NEW : " + tbd_url + "\n\n")
                     print(f"done, length of scraped url: {len(scraped_urls)}")
                 with open("allHashes.txt", "a") as y:
-                    y.write("hashin....\n")
+                    y.write("hashin.... keys: hash value\n")
                     for i in all_hashes:
                         y.write(f"{i}, {all_hashes[i]}\n")
                     y.write("\nDONE!")
-                    y.write("\n\n\n\n")
+                    y.write("\n")
                 with open("all_subdomains.txt", "a") as z:
-                    z.write("subdomains....\n")
+                    z.write("subdomains.... subdomain to number of pages on domain\n")
                     for i in subdomains:
                         z.write(f"{i}, {subdomains[i]}\n")
                     z.write("\nDONE!")
-                    z.write("\n\n\n\n")
+                    z.write("\n")
 
                 with open("all_pages.txt", "a") as z:
-                    z.write("ALL PAGES....\n")
+                    z.write("ALL PAGES.... pages to num words\n")
                     for i in all_pages:
                         z.write(f"{i}, {all_pages[i]}\n")
                     z.write("\nDONE!")
-                    z.write("\n\n\n\n")
+                    z.write("\n")
 
                 with open("all_words.txt", "a") as z:
-                    z.write("ALL WORDS....\n")
+                    z.write("ALL WORDS....words to count\n")
                     for i in all_words:
                         z.write(f"{i}, {all_words[i]}\n")
                     z.write("DONE!")
-                    z.write("\n\n\n\n")
+                    z.write("\n")
 
             self.frontier.mark_url_complete(tbd_url)
             time.sleep(self.config.time_delay)
