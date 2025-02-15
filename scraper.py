@@ -140,10 +140,11 @@ def extractLink(page : str, url : str) -> set:
 
     soup = BeautifulSoup(page, "html.parser")
     text = soup.get_text(separator=" ").strip()
+    if isSimilar(simhash(text)):
+        return set()
     if url not in all_hashes:
         all_hashes[url] = simhash(text)
-    if isSimilar(all_hashes[url]):
-        return set()
+
 
     return set(links)  # no duplicate links to avoid traps
 
